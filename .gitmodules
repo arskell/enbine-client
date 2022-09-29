@@ -1,0 +1,3 @@
+[submodule "enbine"]
+	path = enbine
+	url = https://github.com/arskell/enbine
