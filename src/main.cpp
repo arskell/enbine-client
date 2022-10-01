@@ -7,6 +7,8 @@
 #include <array>
 #include <memory.h>
 
+#include <enbine/graphics/angle/euler_angles.h>
+
 void error_callback(int error, const char* description)
 {
     fprintf(stderr, "Error: %s\n", description);
@@ -19,6 +21,9 @@ struct Color{
 } __attribute__((packed));
 
 int main(){
+    
+    EulerAngles a{},b{};
+    auto c = a + b;
     
     assert(glfwInit());
     glfwSetErrorCallback(error_callback);
