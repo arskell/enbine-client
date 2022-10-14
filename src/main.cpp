@@ -73,8 +73,6 @@ int main(){
 
         glDrawPixels(600, 600, GL_RGB,  GL_UNSIGNED_BYTE, image.data());
         
-
-        //counter = (counter + 1)%image.size();
         glfwSwapBuffers(wnd);
     }
 
