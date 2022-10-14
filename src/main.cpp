@@ -6,6 +6,7 @@
 #include <GL/gl.h>
 #include <array>
 #include <memory.h>
+#include <math.h>
 
 #include "enbine/graphics/scene/view_port/view_port.h"
 #include "enbine/graphics/scene/primitives/triangle.h"
@@ -21,29 +22,14 @@ struct Color{
     unsigned char b;
 } __attribute__((packed));
 
-int main(){
-    
-    assert(glfwInit());
-    glfwSetErrorCallback(error_callback);
 
-    GLFWwindow *wnd = glfwCreateWindow(600, 600, "Scene", nullptr, nullptr);
-    assert(wnd);
-
-    std::array<Color, 600*600> image;
-    memset(image.data(), 255, image.size() * sizeof(Color));
-
-    glfwMakeContextCurrent(wnd);
-    glfwSwapBuffers(wnd);
-
-    int counter  = 0;
-
-    glRasterPos2f(-1,1);
-    glPixelZoom( 1, -1 );
-
+void render(std::array<Color, 600*600>& image, float tick){
     ViewPort view_port;
+    
+
     Triangle triangle{
         {-200, 0, 10},{200, 200 , 10},{0, 200, 10}
-        };
+    };
 
     for(int x = 0; x < 600; ++x){
         for(int y = 0; y < 600; ++y){
@@ -67,13 +53,39 @@ int main(){
         }
     }
 
+}
+
+int main(){
+    
+    assert(glfwInit());
+    glfwSetErrorCallback(error_callback);
+
+    GLFWwindow *wnd = glfwCreateWindow(600, 600, "Scene", nullptr, nullptr);
+    assert(wnd);
+
+    std::array<Color, 600*600> image;
+    memset(image.data(), 255, image.size() * sizeof(Color));
+
+    glfwMakeContextCurrent(wnd);
+    glfwSwapBuffers(wnd);
+
+
+    glRasterPos2f(-1,1);
+    glPixelZoom( 1, -1 );
+
+    
+    float tick = 0;
+
     while(!glfwWindowShouldClose(wnd)){
         glfwPollEvents();
         glClear(GL_COLOR_BUFFER_BIT);
 
+        render(image, tick);
+
         glDrawPixels(600, 600, GL_RGB,  GL_UNSIGNED_BYTE, image.data());
         
         glfwSwapBuffers(wnd);
+        //tick += 0.2;
     }
 
     glfwDestroyWindow(wnd);
