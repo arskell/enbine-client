@@ -29,8 +29,8 @@ void render(std::array<Color, 600*600>& image, float tick){
     info.screen_horizontal_size = info.screen_vertical_size = 600;
     info.horizontal_fow = info.vertical_fow = M_PI_2;
     
-    info.beta = M_PI_2;///3;
-    //info.alpha = tick;
+    info.beta = M_PI_2;
+   // info.alpha = 0;
     
     ViewPort view_port(info);
     
@@ -54,9 +54,11 @@ void render(std::array<Color, 600*600>& image, float tick){
                 image[index].b = 0;
 
             }else{
-                image[index].r = 255;
-                image[index].g = 255;
-                image[index].b = 255;
+
+                image[index].r =  100 + ray.d.x1 * 25;
+                image[index].g =  100 + ray.d.x2 * 25;
+                image[index].b =  100 + ray.d.x3 * 25;
+ 
             }
         }
     }
