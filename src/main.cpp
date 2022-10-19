@@ -24,11 +24,19 @@ struct Color{
 
 
 void render(std::array<Color, 600*600>& image, float tick){
-    ViewPort view_port;
+    ViewPortInfo info{};
+    
+    info.screen_horizontal_size = info.screen_vertical_size = 600;
+    info.horizontal_fow = info.vertical_fow = M_PI_2;
+    
+    info.beta = M_PI_2;///3;
+    //info.alpha = tick;
+    
+    ViewPort view_port(info);
     
 
     Triangle triangle{
-        {-200, 0, 10},{200, 200 , 10},{0, 200, 10}
+        {-200, 0 - 100, 300},{200, 200 - 100, 300},{0, 200 - 100, 300 /*+ tick*/}
     };
 
     for(int x = 0; x < 600; ++x){
@@ -85,7 +93,7 @@ int main(){
         glDrawPixels(600, 600, GL_RGB,  GL_UNSIGNED_BYTE, image.data());
         
         glfwSwapBuffers(wnd);
-        //tick += 0.2;
+        tick += 0.1;
     }
 
     glfwDestroyWindow(wnd);
