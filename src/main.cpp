@@ -7,7 +7,7 @@
 #include <array>
 #include <memory.h>
 #include <math.h>
-
+#include <mutex>
 #include "enbine/graphics/scene/view_port/view_port.h"
 #include "enbine/graphics/scene/primitives/triangle.h"
 
@@ -23,18 +23,11 @@ struct Color{
 } __attribute__((packed));
 
 
-void render(std::array<Color, 600*600>& image, float tick){
-    ViewPortInfo info{};
-    
-    info.screen_horizontal_size = info.screen_vertical_size = 600;
-    info.horizontal_fow = info.vertical_fow = M_PI_2;
-    
-    info.beta = M_PI_2;
-   // info.alpha = 0;
-    
-    ViewPort view_port(info);
-    
+ViewPort view_port;
 
+
+void render(std::array<Color, 600*600>& image, float tick){
+    
     Triangle triangle{
         {-200, 0 - 100, 300},{200, 200 - 100, 300},{0, 200 - 100, 300 /*+ tick*/}
     };
@@ -65,13 +58,62 @@ void render(std::array<Color, 600*600>& image, float tick){
 
 }
 
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{   
+    
+    float alpha_rotate_delta{};
+    float beta_rotate_delta{};
+    float pos_delta{};
+    switch(key){
+        case GLFW_KEY_UP:
+        beta_rotate_delta+=0.2;    
+        break;
+        case GLFW_KEY_DOWN:
+        beta_rotate_delta-=0.2;    
+        break;
+        case GLFW_KEY_RIGHT:
+        alpha_rotate_delta-=0.2;    
+        break;
+        case GLFW_KEY_LEFT:
+        alpha_rotate_delta+=0.2;    
+        break;
+        case GLFW_KEY_W:
+        pos_delta+=5;    
+        break;
+        case GLFW_KEY_S:
+        pos_delta-=5;    
+        break;
+        default:;
+    }
+
+    auto info = view_port.get_info();
+    info.alpha+=alpha_rotate_delta;
+    info.beta+=beta_rotate_delta;
+    info.pos = info.pos + view_port.get_look_at() * pos_delta;
+    view_port.set(info);
+
+}
+
 int main(){
     
+    ViewPortInfo info{};
+    
+    info.screen_horizontal_size = info.screen_vertical_size = 600;
+    info.horizontal_fow = info.vertical_fow = M_PI_2;
+    
+    info.beta = M_PI_2;
+   // info.alpha = 0;
+    
+    view_port.set(info);
+
     assert(glfwInit());
     glfwSetErrorCallback(error_callback);
 
     GLFWwindow *wnd = glfwCreateWindow(600, 600, "Scene", nullptr, nullptr);
     assert(wnd);
+    
+    glfwSetKeyCallback(wnd, key_callback);
 
     std::array<Color, 600*600> image;
     memset(image.data(), 255, image.size() * sizeof(Color));
