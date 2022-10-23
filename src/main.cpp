@@ -48,9 +48,9 @@ void render(std::array<Color, 600*600>& image, float tick){
 
             }else{
 
-                image[index].r =  100 + ray.d.x1 * 25;
-                image[index].g =  100 + ray.d.x2 * 25;
-                image[index].b =  100 + ray.d.x3 * 25;
+                image[index].r =255;//  100 + ray.d.x1 * 25;
+                image[index].g =255;//  100 + ray.d.x2 * 25;
+                image[index].b =255;//  100 + ray.d.x3 * 25;
  
             }
         }
@@ -67,16 +67,16 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     float pos_delta{};
     switch(key){
         case GLFW_KEY_UP:
-        beta_rotate_delta+=0.2;    
+        beta_rotate_delta+=0.1;    
         break;
         case GLFW_KEY_DOWN:
-        beta_rotate_delta-=0.2;    
+        beta_rotate_delta-=0.1;    
         break;
         case GLFW_KEY_RIGHT:
-        alpha_rotate_delta-=0.2;    
+        alpha_rotate_delta-=0.1;    
         break;
         case GLFW_KEY_LEFT:
-        alpha_rotate_delta+=0.2;    
+        alpha_rotate_delta+=0.1;    
         break;
         case GLFW_KEY_W:
         pos_delta+=5;    
