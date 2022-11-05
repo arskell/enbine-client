@@ -91,7 +91,7 @@ int main(){
     ViewPortInfo info{};
 
     auto triangle = std::make_shared<Triangle>(Triangle{
-        {-200, 0 - 100, 300},{200, 200 - 100, 300},{0, 200 - 100, 300}
+        {-500, 0 - 100, 300},{500, 200 - 100, 300},{0, 500 - 100, 300}
     });
 
     auto light = std::make_shared<PointLight>();
