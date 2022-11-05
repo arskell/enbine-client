@@ -9,10 +9,12 @@
 #include <memory>
 
 #include <math.h>
+#include <algorithm>
 #include <mutex>
 #include "enbine/graphics/scene/view_port/view_port.h"
 #include "enbine/graphics/scene/primitives/triangle.h"
 #include "enbine/graphics/scene/scene.h"
+#include "enbine/graphics/scene/light/point_light.h"
 
 void error_callback(int error, const char* description)
 {
@@ -38,9 +40,9 @@ void render(std::array<Color, 600*600>& image, float tick){
             auto ray = view_port.get_ray(x, y);
 
             auto state = scene.get_light(ray);
-            image[index].r = state.x1;
-            image[index].g = state.x2;
-            image[index].b = state.x3;
+            image[index].r = std::min(state.x1, (ComponentT)255);
+            image[index].g = std::min(state.x2, (ComponentT)255);
+            image[index].b = std::min(state.x3, (ComponentT)255);
 
         }
     }
@@ -92,7 +94,13 @@ int main(){
         {-200, 0 - 100, 300},{200, 200 - 100, 300},{0, 200 - 100, 300}
     });
 
+    auto light = std::make_shared<PointLight>();
+    light->set_flux({1e8, 1e8, 1e8});
+    light->set_position({0, 0, 0});
+    light->set_n({0,0,1});
+
     scene.add("triangle", triangle);
+    scene.add("point light", light);
 
     info.screen_horizontal_size = info.screen_vertical_size = 600;
     info.horizontal_fow = info.vertical_fow = M_PI_2;
