@@ -6,10 +6,13 @@
 #include <GL/gl.h>
 #include <array>
 #include <memory.h>
+#include <memory>
+
 #include <math.h>
 #include <mutex>
 #include "enbine/graphics/scene/view_port/view_port.h"
 #include "enbine/graphics/scene/primitives/triangle.h"
+#include "enbine/graphics/scene/scene.h"
 
 void error_callback(int error, const char* description)
 {
@@ -24,35 +27,21 @@ struct Color{
 
 
 ViewPort view_port;
-
+Scene scene;
 
 void render(std::array<Color, 600*600>& image, float tick){
     
-    Triangle triangle{
-        {-200, 0 - 100, 300},{200, 200 - 100, 300},{0, 200 - 100, 300 /*+ tick*/}
-    };
-
     for(int x = 0; x < 600; ++x){
         for(int y = 0; y < 600; ++y){
             auto index = x + y*600;
 
             auto ray = view_port.get_ray(x, y);
 
-            auto state = calc_intersection(triangle, ray);
+            auto state = scene.get_light(ray);
+            image[index].r = state.x1;
+            image[index].g = state.x2;
+            image[index].b = state.x3;
 
-            if(state.is_intersected){
-                
-                image[index].r = 0;
-                image[index].g = 0;
-                image[index].b = 0;
-
-            }else{
-
-                image[index].r =255;//  100 + ray.d.x1 * 25;
-                image[index].g =255;//  100 + ray.d.x2 * 25;
-                image[index].b =255;//  100 + ray.d.x3 * 25;
- 
-            }
         }
     }
 
@@ -98,7 +87,13 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 int main(){
     
     ViewPortInfo info{};
-    
+
+    auto triangle = std::make_shared<Triangle>(Triangle{
+        {-200, 0 - 100, 300},{200, 200 - 100, 300},{0, 200 - 100, 300}
+    });
+
+    scene.add("triangle", triangle);
+
     info.screen_horizontal_size = info.screen_vertical_size = 600;
     info.horizontal_fow = info.vertical_fow = M_PI_2;
     
