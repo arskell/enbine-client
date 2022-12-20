@@ -15,6 +15,9 @@
 #include "enbine/graphics/scene/primitives/triangle.h"
 #include "enbine/graphics/scene/scene.h"
 #include "enbine/graphics/scene/light/point_light.h"
+#include "enbine/graphics/material/metal.h"
+
+#include "enbine/graphics/scene/primitives/square.h"
 
 void error_callback(int error, const char* description)
 {
@@ -31,8 +34,39 @@ struct Color{
 ViewPort view_port;
 Scene scene;
 
+template<size_t Size>
+void do_post_processing_linear(const std::array<LightComponentT, Size>& in, std::array<Color, Size>& out){
+
+    static std::array<float, Size> in_dist;
+
+    float mean {};
+    for(size_t i = 0; i < in.size(); ++i){
+        in_dist[i] = (in[i].x1 + in[i].x2 + in[i].x3)/3;
+        mean+=in_dist[i]/Size;
+    }
+
+    float sigma_2{};
+
+    for(size_t i  = 0; i < in.size(); ++i){
+        sigma_2 += pow(in_dist[i] - mean, 2);
+    }
+    sigma_2/=Size;
+    auto sigma = sqrt(sigma_2);
+    
+    const auto k = 200/(mean + sigma * 4);
+  
+    for(size_t i  = 0; i < in.size(); ++i){
+        out[i].r = round(std::min(k * in[i].x1, 255.0f));
+        out[i].g = round(std::min(k * in[i].x2, 255.0f));
+        out[i].b = round(std::min(k * in[i].x3, 255.0f));
+    }
+
+}
+
 void render(std::array<Color, 600*600>& image, float tick){
     
+    static std::array<LightComponentT, 600 * 600> raw_image;
+
     for(int x = 0; x < 600; ++x){
         for(int y = 0; y < 600; ++y){
             auto index = x + y*600;
@@ -40,12 +74,15 @@ void render(std::array<Color, 600*600>& image, float tick){
             auto ray = view_port.get_ray(x, y);
 
             auto state = scene.get_light(ray);
-            image[index].r = std::min(state.x1, (ComponentT)255);
-            image[index].g = std::min(state.x2, (ComponentT)255);
-            image[index].b = std::min(state.x3, (ComponentT)255);
+
+            raw_image[index].x1 = state.x1;
+            raw_image[index].x2 = state.x2;
+            raw_image[index].x3 = state.x3;
 
         }
     }
+
+    do_post_processing_linear(raw_image, image);
 
 }
 
@@ -89,17 +126,28 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 int main(){
     
     ViewPortInfo info{};
+    
+    auto default_metal = std::make_shared<MetalMaterial>(RGB{0.5f,0.5f,0.5f});
+
+    auto default_metal_2 = std::make_shared<MetalMaterial>(RGB{0.05f,0.5f,0.05f});
 
     auto triangle = std::make_shared<Triangle>(Triangle{
-        {-500, 0 - 100, 300},{500, 200 - 100, 300},{0, 500 - 100, 300}
+        {-500, 0 - 100, 300},{500, 200 - 100, 300},{0, 500 - 100, 300}, default_metal
     });
 
+    auto square = std::make_shared<Square>( Vec3{-100, -100,100}, Vec3{1,0,0}, Vec3{0,1,0}, 200.0f, 200.0f, default_metal);
+
+    auto square_front = std::make_shared<Square>( Vec3{-50, -50, 50}, Vec3{1,0,0}, Vec3{0,1,0}, 50.0f, 50.0f, default_metal_2);
+
+
     auto light = std::make_shared<PointLight>();
-    light->set_flux({1e8, 1e8, 1e8});
+    light->set_flux({1, 1, 1});
     light->set_position({0, 0, 0});
     light->set_n({0,0,1});
 
-    scene.add("triangle", triangle);
+    scene.add("triangle", square);
+    scene.add("triangle_2", square_front);
+
     scene.add("point light", light);
 
     info.screen_horizontal_size = info.screen_vertical_size = 600;
